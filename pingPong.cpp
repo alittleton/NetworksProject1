@@ -1,11 +1,4 @@
-//This an simple exmple of single threaded  echo server. 
-//The  server  opens a socket 
-// a port(command line argument) and listen for connection. If a connection
-//request comes from the client it accpts the connection and wait for message
-//from the client. When it receives a message from client it prints the message 
-//standard out. Also server prepend "Server: I received the following message: "
-//to the received message and send it back to client. The server than 
-//close the connection.
+#include "pingPong.h"
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,42 +7,24 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h> 
+#include <unistd.h>
 
 using namespace std;
 
-void handleConnection(int clisock) 
-{
-	
-	int msgSize;
-	char buffer[1016]; // 
-	memset(buffer, '\0', 1016); // Clear the buffer.
-	
-	if((msgSize = recv(clisock, buffer, 1015, 0)) < 0) 
-	{
-		cerr << "Receive error." << endl;
-	}
-	
-	cout << "Message received from client: " << buffer<<endl;
-	char response[1024];
-	sprintf(response, "Server: I received the following message:  %s", buffer);
-	
-	if((msgSize = send(clisock, response, strlen(response), 0)) < 0) 
-	{
-		cerr << "Send error." << endl;
-	}
-	
-	close(clisock);
+ConnectionInfo::ConnectionInfo(){
+
+    port = 0;
 }
 
+ConnectionInfo::~ConnectionInfo(){
 
-int main(int argc, char* argv[]) 
-{
-	
-	// Set up the socket.
-	
+}
+
+int run_server(int port){
+	std::cout << port << std::endl;
+
 	int sockfd, newsockfd;
-	unsigned int clilen;
-	int port = atoi(argv[1]);	
+	unsigned int clilen;	
 	// Structures for client and server addresses.
 	struct sockaddr_in server_addr, cli_addr;
 	
@@ -89,6 +64,33 @@ int main(int argc, char* argv[])
 		}
 		handleConnection(newsockfd);
 	}
-	
 }
 
+int connect_to_server(char* who, int port, ConnectionInfo* con){
+
+
+}
+
+void handleConnection(int clisock) 
+{
+	
+	int msgSize;
+	char buffer[1016]; // 
+	memset(buffer, '\0', 1016); // Clear the buffer.
+	
+	if((msgSize = recv(clisock, buffer, 1015, 0)) < 0) 
+	{
+		cerr << "Receive error." << endl;
+	}
+	
+	cout << "Message received from client: " << buffer<<endl;
+	char response[1024];
+	sprintf(response, "Server: I received the following message:  %s", buffer);
+	
+	if((msgSize = send(clisock, response, strlen(response), 0)) < 0) 
+	{
+		cerr << "Send error." << endl;
+	}
+	
+	close(clisock);
+}
