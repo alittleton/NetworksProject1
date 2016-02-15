@@ -10,7 +10,7 @@ int main(int argc, char* argv[]){
     
     ConnectionInfo thing1 = ConnectionInfo();
     int port = atoi(argv[1]);
-    //thing1.connect_to_server();
+    connect_to_server(argv[1], argv[2]);
 
     return 0;
 
