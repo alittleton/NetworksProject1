@@ -8,9 +8,10 @@ using namespace std;
 
 int main(int argc, char* argv[]){
     
-    ConnectionInfo thing1 = ConnectionInfo();
+    ConnectionInfo con;
     int port = atoi(argv[1]);
     connect_to_server(argv[1], argv[2]);
+    //connect_to_server(argv[2], port, &con);
 
     return 0;
 

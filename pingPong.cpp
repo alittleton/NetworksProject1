@@ -14,7 +14,7 @@ using namespace std;
 
 ConnectionInfo::ConnectionInfo(){
 
-    port = 0;
+    sockid = 0;
 }
 
 ConnectionInfo::~ConnectionInfo(){
@@ -65,6 +65,7 @@ int run_server(int port){
 		}
 		handleConnection(newsockfd);
 	}
+	
 }
 
 //int connect_to_server(char* who, int port, ConnectionInfo* con){
@@ -114,44 +115,63 @@ int connect_to_server(char* host, char* port){
 		cerr << "Connect error." << endl;
 		exit(1);
 	}
-	cout <<"What message to send: ";
-	cin.getline(message,1024);
-	if((msgSize = send(sockfd, message, strlen(message), 0)) < 0) 
-	{
-		cerr << "Send error." << endl;
-	}
+
+	while(1){
+		cout << "Enter your message: ";
+		cin.getline(message,1024);
+		if((msgSize = send(sockfd, message, strlen(message), 0)) < 0) 
+		{
+			cerr << "Send error." << endl;
+		}
+			
+		// Wait to receive response.
+		if((msgSize = recv(sockfd, output, 1023, 0)) < 0) 
+		{
+			cerr << "Receive error." << endl;
+		}
 		
-	// Wait to receive response.
-	if((msgSize = recv(sockfd, output, 1023, 0)) < 0) 
-	{
-		cerr << "Receive error." << endl;
-	}
-	
-	cout << output << endl;		
-	close(sockfd);
+		cout << output << endl;
+
+		memset(output, '\0', 1024); // Clear the buffer.
+		memset(message, '\0', 1024); // Clear the buffer.
+	}	
+	//close(sockfd);
 
 }
 
 void handleConnection(int clisock) 
 {
-	
 	int msgSize;
 	char buffer[1016]; // 
+	char response[1016];
 	memset(buffer, '\0', 1016); // Clear the buffer.
+	memset(response, '\0', 1016); // Clear the buffer.
 	
-	if((msgSize = recv(clisock, buffer, 1015, 0)) < 0) 
+	while((msgSize = recv(clisock, buffer, 1015, 0)) > 0) 
 	{
-		cerr << "Receive error." << endl;
+		cout << buffer << endl;
+
+		if(buffer[0]=='P' && buffer[1]=='I'&& buffer[2]=='N' && buffer[3]=='G'){
+			sprintf(response, "PONG");
+		}
+		else if(buffer[0]=='p' && buffer[1]=='i'&& buffer[2]=='n' && buffer[3]=='g'){
+			sprintf(response, "PONG");
+		}
+		else{
+			sprintf(response, "%s", buffer);
+		}	
+		
+		if((msgSize = send(clisock, response, strlen(response), 0)) < 0) 
+		{
+			cerr << "Send error." << endl;
+		}
+
+		memset(buffer, '\0', 1016); // Clear the buffer.
+		memset(response, '\0', 1016); // Clear the buffer.
 	}
 	
-	cout << "Message received from client: " << buffer<<endl;
-	char response[1024];
-	sprintf(response, "Server: I received the following message:  %s", buffer);
 	
-	if((msgSize = send(clisock, response, strlen(response), 0)) < 0) 
-	{
-		cerr << "Send error." << endl;
-	}
+	
 	
 	close(clisock);
 }

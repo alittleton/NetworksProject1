@@ -1,0 +1,8 @@
+understand server address structures
+
+server_addr/sockfd/cli_addr go in the class/struct?
+
+sendMessage: wrapper for send
+receiveMessage: wrapper for recv
+
+
