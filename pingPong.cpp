@@ -68,8 +68,8 @@ int run_server(int port){
 	
 }
 
-//int connect_to_server(char* who, int port, ConnectionInfo* con){
-int connect_to_server(char* host, char* port){
+int connect_to_server(char* who, int port, ConnectionInfo* con){
+//int connect_to_server(char* host, char* port){
 	int sockfd;
 	struct sockaddr_in server_addr;
 	int msgSize, i_port;
@@ -78,19 +78,9 @@ int connect_to_server(char* host, char* port){
 	struct hostent* hent;
 	memset(output, '\0', 1024); // Clear the buffer.
 
-	// Check for correct commandline input.
-	
-	i_port = atoi(port);
-	
-	// Error check the port number.
-	if(i_port <= 10000) 
-	{
-		cerr << "Port > 10000 required." << endl;
-		exit(1);
-	}
 	
 	// Error check the server name.
-	if((hent=gethostbyname(host)) == NULL) 
+	if((hent=gethostbyname(who)) == NULL) 
 	{
 		cerr << "Invalid host name." << endl;
 		exit(1);
@@ -108,7 +98,7 @@ int connect_to_server(char* host, char* port){
 	// Set up the server address structure.
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr = *((struct in_addr *)hent->h_addr);
-	server_addr.sin_port = htons(i_port);
+	server_addr.sin_port = htons(port);
 
 	if(connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) 
 	{
@@ -116,16 +106,17 @@ int connect_to_server(char* host, char* port){
 		exit(1);
 	}
 
+	con->sockid=sockfd;
 	while(1){
 		cout << "Enter your message: ";
 		cin.getline(message,1024);
-		if((msgSize = send(sockfd, message, strlen(message), 0)) < 0) 
+		if((msgSize = send(con->sockid, message, strlen(message), 0)) < 0) 
 		{
 			cerr << "Send error." << endl;
 		}
 			
 		// Wait to receive response.
-		if((msgSize = recv(sockfd, output, 1023, 0)) < 0) 
+		if((msgSize = recv(con->sockid, output, 1023, 0)) < 0) 
 		{
 			cerr << "Receive error." << endl;
 		}
