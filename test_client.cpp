@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -12,6 +13,19 @@ int main(int argc, char* argv[]){
     int port = atoi(argv[2]);
     //connect_to_server(argv[1], argv[2]);
     connect_to_server(argv[1], port, &con);
+    char message[1024];
+    char* response;
+
+    while(1){
+
+    	cin.getline(message, sizeof(message));
+    	sendMessage(&con, message);
+
+    	response = receiveMessage(&con);  
+
+    	free(response);
+    	memset(message, '\0', sizeof(message));
+    }
 
     return 0;
 
