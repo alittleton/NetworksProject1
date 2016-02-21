@@ -23,8 +23,9 @@ int main(int argc, char* argv[]){
 
     	response = receiveMessage(&con);  
 
-    	free(response);
+    	deallocate_message(response);
     	memset(message, '\0', sizeof(message));
+    	memset(response, '\0', sizeof(response));
     }
 
     return 0;

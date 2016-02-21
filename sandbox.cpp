@@ -10,14 +10,12 @@ int main(){
 	char foo[50];
 	char bar[10] = "PONG";
 
-	char buff[30] = "Hello, World";
-	cout << sizeof(buff) << endl;
-	char* buff_alloc = (char*)malloc(sizeof(buff));
-	sprintf(buff_alloc, "%s", buff);
+	int i = 0;
+	cout << i << endl;
+	i++;
+	cout << i << endl;
 
-	cout << buff_alloc << endl;
-
-	free(buff_alloc);
+	
 	
 	
 
