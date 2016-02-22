@@ -1,3 +1,14 @@
+/*Andrew Littleton CSC 4200 Spring '16
+pingPong is designed to run a server on a 
+provided port and allow multiple clients
+to connect using threads.  A data structure
+of type ConnectionInfo is created upon 
+calling connect_to_server which contains the
+connection information necessary to send
+and receive messages
+*/
+
+
 #ifndef PINGPONG_H
 #define PINGPONG_H
 

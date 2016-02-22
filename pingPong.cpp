@@ -1,5 +1,6 @@
+// Andrew Littleton CSC 4200 Spring '16
+
 #include "pingPong.h"
-#include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -8,9 +9,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h> 
 #include <unistd.h>
-#include <netdb.h>
-#include <pthread.h>  
+#include <netdb.h>  
 #include <cstdlib>
+#include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -27,17 +29,21 @@ ConnectionInfo::~ConnectionInfo(){
 
 }
 
-void* server_respond(void* sockfd){
+/* this handles the server responses to the client,
+	returns "PONG" is PING or ping is sent, otherwise
+	returns the message that was sent
+*/
+void server_respond(int sockptr){
 
-	char buffer[1016]; // 
+	char buffer[1016]; 
 	char response[1016];
 	int msgSize;
 
-	int sockptr=(intptr_t) sockfd;
-	
+	//int sockptr=(intptr_t) sockfd;
+
 	while((msgSize = recv(sockptr, buffer, 1015, 0)) > 0){
 			
-			cout << buffer << endl;
+			//cout << buffer << endl;
 
 		if(buffer[0]=='P' && buffer[1]=='I'&& buffer[2]=='N' && buffer[3]=='G'){
 			sprintf(response, "PONG");
@@ -54,20 +60,18 @@ void* server_respond(void* sockfd){
 			cerr << "Send error." << endl;
 		}
 
-		memset(buffer, '\0', 1016); // Clear the buffer.
-		memset(response, '\0', 1016); // Clear the buffer.
+		memset(buffer, '\0', 1016); //clear buffer so it can be reused
+		memset(response, '\0', 1016);
 	}
 
 	close(sockptr);
 }
 
-void* handleConnection(void* clisock){
-
-	int sock = (intptr_t) clisock;
-
-	pthread_t* threads;
-	threads = new pthread_t[50];
-    int thread_count = 0;
+/* this handles the accepting of clients to 
+	the server and if successful, spawns
+	a new thread that monitors server_respond
+*/
+void handleConnection(int sock){
     
 
 	int newsockfd;
@@ -85,8 +89,7 @@ void* handleConnection(void* clisock){
 			exit(1);
 		}
 
-		pthread_create(&threads[thread_count], NULL, server_respond, (void*)(intptr_t) newsockfd);
-		thread_count++;
+		std::thread (server_respond, newsockfd).detach();
 
 	}
 
@@ -94,7 +97,6 @@ void* handleConnection(void* clisock){
 
 
 int run_server(int port){
-	std::cout << port << std::endl;
 
 	int sockfd, newsockfd;
 	unsigned int clilen;	
@@ -118,29 +120,22 @@ int run_server(int port){
 	// Bind the socket to the server address and port.
 	if(bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) 
 	{
-		cerr << "Bind error.";
+		cerr << "Bind error." << endl;
 		close(sockfd);
 		return 1;
 	}
 
-	pthread_t server_thd;
-	pthread_create(&server_thd, NULL, handleConnection, (void*)(intptr_t) sockfd);
-	//out << "thread with sockid: " << sockfd << endl;
-
+	std::thread(handleConnection, sockfd).detach();
 
 	return 0;
 }
 
 int connect_to_server(char* who, int port, ConnectionInfo* con){
-//int connect_to_server(char* host, char* port){
+
 	int sockfd;
 	struct sockaddr_in server_addr;
 	int msgSize;
-	//char message[1024];
-	//char output[1024]; // Output message from server.
 	struct hostent* hent;
-	//memset(output, '\0', 1024); // Clear the buffer.
-
 	
 	// Error check the server name.
 	if((hent=gethostbyname(who)) == NULL) 
@@ -168,7 +163,8 @@ int connect_to_server(char* who, int port, ConnectionInfo* con){
 		cerr << "Connect error." << endl;
 		return 1;
 	}
-	
+
+	cout << "Ready to send messages" << endl;
 
 	con->sockid=sockfd;
 
@@ -189,8 +185,6 @@ int sendMessage(ConnectionInfo* con, char* message){
 
 }
 
-
-//void handleConnection(int clisock) 
 char* recieveMessage(ConnectionInfo* con){
 	
 	char response[1016];

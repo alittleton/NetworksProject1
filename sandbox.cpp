@@ -4,18 +4,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <thread>
 
 using namespace std;
 
+void foo(){
+	cout << "foo" << endl;
+}
+
+void bar(int x){
+	cout << x << endl;
+}
+
 int main(){
 
-	char foo[50];
-	char bar[10] = "PONG";
+	std::thread first (foo);     // spawn new thread that calls foo()
+  	std::thread second (bar,0);  // spawn new thread that calls bar(0)
 
-	int i = 0;
-	cout << i << endl;
-	i++;
-	cout << i << endl;
+  	std::cout << "main, foo and bar now execute concurrently...\n";
+
+	// synchronize threads:
+	first.join();                // pauses until first finishes
+	second.join();               // pauses until second finishes
+
+	std::cout << "foo and bar completed.\n";
+
 
 	
 	
