@@ -34,8 +34,6 @@ void* server_respond(void* sockfd){
 	int msgSize;
 
 	int sockptr=(intptr_t) sockfd;
-	cout << "responding " << sockptr << endl;
-	
 	
 	while((msgSize = recv(sockptr, buffer, 1015, 0)) > 0){
 			
@@ -66,7 +64,6 @@ void* server_respond(void* sockfd){
 void* handleConnection(void* clisock){
 
 	int sock = (intptr_t) clisock;
-	cout << "handling " << sock << endl;
 
 	pthread_t* threads;
 	threads = new pthread_t[50];

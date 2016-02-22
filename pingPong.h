@@ -19,8 +19,5 @@ int connect_to_server(char* who, int port, ConnectionInfo* con);
 int sendMessage(ConnectionInfo* con, char* message);
 char* recieveMessage(ConnectionInfo* con);
 void dealocate_message(char* mem);
-//void* server_respond(int sockfd);
-
-void handleConnection(int clisock);
 
 #endif
