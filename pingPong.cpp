@@ -1,4 +1,5 @@
 // Andrew Littleton CSC 4200 Spring '16
+//NOTE: must be compiled with the -std=c++11 and -pthread flags
 
 #include "pingPong.h"
 #include <stdlib.h>
@@ -35,20 +36,20 @@ ConnectionInfo::~ConnectionInfo(){
 */
 void server_respond(int sockptr){
 
-	char buffer[1016]; 
-	char response[1016];
+	char buffer[4096]; 
+	char response[4096];
 	int msgSize;
 
 	//int sockptr=(intptr_t) sockfd;
 
-	while((msgSize = recv(sockptr, buffer, 1015, 0)) > 0){
+	while((msgSize = recv(sockptr, buffer, 4095, 0)) > 0){
 			
 			//cout << buffer << endl;
 
-		if(buffer[0]=='P' && buffer[1]=='I'&& buffer[2]=='N' && buffer[3]=='G'){
+		if(buffer[0]=='P' && buffer[1]=='I'&& buffer[2]=='N' && buffer[3]=='G' && buffer[4] == '\0'){
 			sprintf(response, "PONG");
 		}
-		else if(buffer[0]=='p' && buffer[1]=='i'&& buffer[2]=='n' && buffer[3]=='g'){
+		else if(buffer[0]=='p' && buffer[1]=='i'&& buffer[2]=='n' && buffer[3]=='g' && buffer[4] == '\0'){
 			sprintf(response, "PONG");
 		}
 		else{
@@ -60,8 +61,8 @@ void server_respond(int sockptr){
 			cerr << "Send error." << endl;
 		}
 
-		memset(buffer, '\0', 1016); //clear buffer so it can be reused
-		memset(response, '\0', 1016);
+		memset(buffer, '\0', 4096); //clear buffer so it can be reused
+		memset(response, '\0', 4096);
 	}
 
 	close(sockptr);
@@ -187,12 +188,12 @@ int sendMessage(ConnectionInfo* con, char* message){
 
 char* recieveMessage(ConnectionInfo* con){
 	
-	char response[1016];
-	memset(response, '\0', 1016);
+	char response[4096];
+	memset(response, '\0', 4096);
 
 	int msgSize = 0;
 	
-	if((msgSize = recv(con->sockid, response, 1015, 0)) < 0) 
+	if((msgSize = recv(con->sockid, response, 4095, 0)) < 0) 
 	{
 		cerr << "Receive error" << endl;
 	}
