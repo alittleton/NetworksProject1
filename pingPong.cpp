@@ -17,56 +17,15 @@ using namespace std;
 ConnectionInfo::ConnectionInfo(){
 
     sockid = 0;
+
+    
 }
 
 ConnectionInfo::~ConnectionInfo(){
 
 	close(sockid);
 
-	/*for(int i=0; i<50; i++){
-		pthread_join(server_threads[i], NULL);
-	}
-
-	delete [] server_threads;*/
 }
-
-void* handleConnection(void* clisock){
-
-	int sock = (intptr_t) clisock;
-	cout << "handling " << sock << endl;
-
-	int msgSize;
-	char buffer[1016]; // 
-	char response[1016];
-	memset(buffer, '\0', 1016); // Clear the buffer.
-	memset(response, '\0', 1016); // Clear the buffer.
-	
-	while((msgSize = recv(sock, buffer, 1015, 0)) > 0) 
-	{
-		cout << buffer << endl;
-
-		if(buffer[0]=='P' && buffer[1]=='I'&& buffer[2]=='N' && buffer[3]=='G'){
-			sprintf(response, "PONG");
-		}
-		else if(buffer[0]=='p' && buffer[1]=='i'&& buffer[2]=='n' && buffer[3]=='g'){
-			sprintf(response, "PONG");
-		}
-		else{
-			sprintf(response, "%s", buffer);
-		}	
-		
-		if((msgSize = send(sock, response, strlen(response), 0)) < 0) 
-		{
-			cerr << "Send error." << endl;
-		}
-
-		memset(buffer, '\0', 1016); // Clear the buffer.
-		memset(response, '\0', 1016); // Clear the buffer.
-	}
-
-	close(sock);
-}
-
 
 void* server_respond(void* sockfd){
 
@@ -75,26 +34,10 @@ void* server_respond(void* sockfd){
 	int msgSize;
 
 	int sockptr=(intptr_t) sockfd;
-	int newsockfd;
-	cout << "server_respond " << sockptr << endl;
-
-	pthread_t *server_threads;
-	server_threads = new pthread_t[50];
-	int server_count = 0;
-
-	struct sockaddr_in cli_addr;
-	unsigned int clilen;
-	listen(sockptr, 10);
-
-	clilen = sizeof(cli_addr);
-		newsockfd = accept(sockptr, (struct sockaddr *) &cli_addr, &clilen);
-		if(newsockfd < 0) 
-		{
-			cerr << "Accept error." << endl;
-			exit(1);
-		}
+	cout << "responding " << sockptr << endl;
 	
-	while((msgSize = recv(newsockfd, buffer, 1015, 0)) > 0){
+	
+	while((msgSize = recv(sockptr, buffer, 1015, 0)) > 0){
 			
 			cout << buffer << endl;
 
@@ -108,7 +51,7 @@ void* server_respond(void* sockfd){
 			sprintf(response, "%s", buffer);
 		}	
 		
-		if((msgSize = send(newsockfd, response, strlen(response), 0)) < 0) 
+		if((msgSize = send(sockptr, response, strlen(response), 0)) < 0) 
 		{
 			cerr << "Send error." << endl;
 		}
@@ -117,7 +60,39 @@ void* server_respond(void* sockfd){
 		memset(response, '\0', 1016); // Clear the buffer.
 	}
 
-	close(newsockfd);
+	close(sockptr);
+}
+
+void* handleConnection(void* clisock){
+
+	int sock = (intptr_t) clisock;
+	cout << "handling " << sock << endl;
+
+	pthread_t* threads;
+	threads = new pthread_t[50];
+    int thread_count = 0;
+    
+
+	int newsockfd;
+
+	struct sockaddr_in cli_addr;
+	unsigned int clilen;
+	listen(sock, 10);
+	clilen = sizeof(cli_addr);
+
+	while(1){	
+		newsockfd = accept(sock, (struct sockaddr *) &cli_addr, &clilen);
+		if(newsockfd < 0) 
+		{
+			cerr << "Accept error." << endl;
+			exit(1);
+		}
+
+		pthread_create(&threads[thread_count], NULL, server_respond, (void*)(intptr_t) newsockfd);
+		thread_count++;
+
+	}
+
 }
 
 
@@ -147,14 +122,13 @@ int run_server(int port){
 	if(bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) 
 	{
 		cerr << "Bind error.";
+		close(sockfd);
 		return 1;
 	}
 
-	//int* sockptr = malloc(sizeof(sockfd));
-	//sockptr = &sockfd;
 	pthread_t server_thd;
-	pthread_create(&server_thd, NULL, server_respond, (void*)(intptr_t) sockfd);
-	cout << "thread with sockid: " << sockfd << endl;
+	pthread_create(&server_thd, NULL, handleConnection, (void*)(intptr_t) sockfd);
+	//out << "thread with sockid: " << sockfd << endl;
 
 
 	return 0;
@@ -197,12 +171,11 @@ int connect_to_server(char* who, int port, ConnectionInfo* con){
 		cerr << "Connect error." << endl;
 		return 1;
 	}
+	
 
 	con->sockid=sockfd;
 
 	return 0;
-	
-	//close(sockfd);
 
 }
 
@@ -222,18 +195,16 @@ int sendMessage(ConnectionInfo* con, char* message){
 
 //void handleConnection(int clisock) 
 char* recieveMessage(ConnectionInfo* con){
-	int msgSize;
-	char buffer[1016]; // 
-	char response[1016];
-	memset(buffer, '\0', 1016); // Clear the buffer.
-	memset(response, '\0', 1016); // Clear the buffer.
 	
-	if((msgSize = recv(con->sockid, buffer, 1015, 0)) < 0) 
+	char response[1016];
+	memset(response, '\0', 1016);
+
+	int msgSize = 0;
+	
+	if((msgSize = recv(con->sockid, response, 1015, 0)) < 0) 
 	{
 		cerr << "Receive error" << endl;
 	}
-
-	cout << buffer << endl;
 
 	char* retval = (char*)malloc(sizeof(response)); //return a pointer to the message
 	sprintf(retval, "%s", response);				

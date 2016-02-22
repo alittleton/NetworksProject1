@@ -13,6 +13,7 @@ int main(int argc, char* argv[]){
     int port = atoi(argv[2]);
     //connect_to_server(argv[1], argv[2]);
     connect_to_server(argv[1], port, &con);
+    cout << "Connection with sockid: " << con.sockid << endl;
     char message[1024];
     char* response;
 
@@ -21,9 +22,11 @@ int main(int argc, char* argv[]){
     	cin.getline(message, sizeof(message));
     	sendMessage(&con, message);
 
-    	response = receiveMessage(&con);  
+    	response = recieveMessage(&con);  
+    	cout << response << endl;
 
-    	deallocate_message(response);
+
+    	dealocate_message(response);
     	memset(message, '\0', sizeof(message));
     	memset(response, '\0', sizeof(response));
     }
